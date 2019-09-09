@@ -51,31 +51,6 @@ def __pass_session_attributes(session):
     print('pass_session_attributes====>')
     print(d)
     return d
-    
-def get_insult_response(intent, session):
-    """ An example of a custom intent. Same structure as welcome message, just make sure to add this intent
-    in your alexa skill in order for it to work.
-    """
-    print("get_insult_response===>")
-    print(session)
-    session_attributes = __pass_session_attributes(session)
-    
-    if session.get('attributes', {}):
-        session_attributes['ship_strength'] = session_attributes['ship_strength']  + 5
-        
-    card_title = "Insult"
-    speech_output = "That's not very nice. I don't want to."
-    reprompt_text = "I would rather not do that."
-    
-    if session.get('attributes', {}) and session['attributes']['ship_strength'] == 110:
-        insult = get_insult()
-        speech_output = "you are a " + insult
-        reprompt_text = "I said you are a " + insult
-        
-    should_end_session = False
-    
-    return build_response(session_attributes, build_speechlet_response(
-        card_title, speech_output, reprompt_text, should_end_session))
 
 def get_status_response(intent, session):
     """ Give player current status
@@ -83,11 +58,15 @@ def get_status_response(intent, session):
     print("get_status_response===>")
     print(session)
     session_attributes = __pass_session_attributes(session)
+    speech_output = "I'm sorry there has been an error, please contact neurojump forums"
     
+    if session.get('attributes', {}):
+        speech_output = "Yes Captain, your crew morale is %d, your ship strength is %d, you have %d intelligence on the location of Alrick Von Monico." % (session_attributes['crew_morale'],
+                                                                                                                                                          session_attributes['ship_strength'],
+                                                                                                                                                          session_attributes['intel'])
+        speech_output = speech_output + " Back to the story. " + scenarios[session_attributes['id']]['DIALOG']
+        
     card_title = "Status"
-    speech_output = "Yes Captain, your crew morale is %d, your ship strength is %d, you have %d intelligence on the location of Alrick Von Monico" % (session_attributes['crew_morale'],
-                                                                                                                                                      session_attributes['ship_strength'],
-                                                                                                                                                      session_attributes['intel'])
     reprompt_text = speech_output
     should_end_session = False
     
@@ -108,6 +87,9 @@ def get_yes_response(intent, session):
         new_id = scenarios[current_id]['YES']
         speech_output = scenarios[new_id]['DIALOG'] # new dialog
         session_attributes['id'] = new_id # send player to next dialog choice
+        session_attributes['crew_morale'] = session_attributes['crew_morale'] + scenarios[current_id]['CREW_MORALE'] # update morale
+        session_attributes['ship_strength'] = session_attributes['ship_strength'] + scenarios[current_id]['SHIP_STRENGTH'] # update ship strength
+        session_attributes['intel'] = session_attributes['intel'] + scenarios[current_id]['INTEL'] # update intel
         
     card_title = "Yes"
     reprompt_text = speech_output
@@ -130,6 +112,9 @@ def get_no_response(intent, session):
         new_id = scenarios[current_id]['NO']
         speech_output = scenarios[new_id]['DIALOG'] # new dialog
         session_attributes['id'] = new_id # send player to next dialog choice
+        session_attributes['crew_morale'] = session_attributes['crew_morale'] + scenarios[current_id]['CREW_MORALE'] # update morale
+        session_attributes['ship_strength'] = session_attributes['ship_strength'] + scenarios[current_id]['SHIP_STRENGTH'] # update ship strength
+        session_attributes['intel'] = session_attributes['intel'] + scenarios[current_id]['INTEL'] # update intel
         
     card_title = "No"
     reprompt_text = speech_output
@@ -198,7 +183,6 @@ def on_intent(intent_request, session):
         return get_yes_response(intent, session)
     elif intent_name == "AMAZON.NoIntent":
         return get_no_response(intent, session)
-        # return get_insult_response(intent, session)
     elif intent_name == "status":
         return get_status_response(intent, session)
     elif intent_name == "AMAZON.HelpIntent":
@@ -206,7 +190,8 @@ def on_intent(intent_request, session):
     elif intent_name == "AMAZON.CancelIntent" or intent_name == "AMAZON.StopIntent":
         return handle_session_end_request()
     else:
-        raise ValueError("Invalid intent")
+        # raise ValueError("Invalid intent")
+        return get_status_response(intent, session)
 
 
 def on_session_ended(session_ended_request, session):
