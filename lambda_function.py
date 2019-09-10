@@ -43,9 +43,10 @@ def __pass_session_attributes(session):
     to keep the session attributes active"""
     d = {}
     if session.get('attributes', {}):
-        d['crew_morale'] = session['attributes']['crew_morale']
-        d['ship_strength'] = session['attributes']['ship_strength']
-        d['intel'] = session['attributes']['intel']
+        current_id = session['attributes']['id']
+        d['crew_morale'] = session['attributes']['crew_morale'] + scenarios[current_id]['CREW_MORALE'] # update morale
+        d['ship_strength'] = session['attributes']['ship_strength'] + scenarios[current_id]['SHIP_STRENGTH'] # update ship strength
+        d['intel'] = session['attributes']['intel'] + scenarios[current_id]['INTEL'] # update intel
         d['id'] = session['attributes']['id']
     
     print('pass_session_attributes====>')
@@ -87,9 +88,6 @@ def get_yes_response(intent, session):
         new_id = scenarios[current_id]['YES']
         speech_output = scenarios[new_id]['DIALOG'] # new dialog
         session_attributes['id'] = new_id # send player to next dialog choice
-        session_attributes['crew_morale'] = session_attributes['crew_morale'] + scenarios[current_id]['CREW_MORALE'] # update morale
-        session_attributes['ship_strength'] = session_attributes['ship_strength'] + scenarios[current_id]['SHIP_STRENGTH'] # update ship strength
-        session_attributes['intel'] = session_attributes['intel'] + scenarios[current_id]['INTEL'] # update intel
         
     card_title = "Yes"
     reprompt_text = speech_output
@@ -112,9 +110,6 @@ def get_no_response(intent, session):
         new_id = scenarios[current_id]['NO']
         speech_output = scenarios[new_id]['DIALOG'] # new dialog
         session_attributes['id'] = new_id # send player to next dialog choice
-        session_attributes['crew_morale'] = session_attributes['crew_morale'] + scenarios[current_id]['CREW_MORALE'] # update morale
-        session_attributes['ship_strength'] = session_attributes['ship_strength'] + scenarios[current_id]['SHIP_STRENGTH'] # update ship strength
-        session_attributes['intel'] = session_attributes['intel'] + scenarios[current_id]['INTEL'] # update intel
         
     card_title = "No"
     reprompt_text = speech_output
