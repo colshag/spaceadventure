@@ -1,42 +1,99 @@
 """
-AWS lambda code by end of part 2 of programming alexa series
+Space Adventure by NeuroJump games
+Special Thanks to Keith Galli for help understanding python Alexa coding!
+https://www.youtube.com/channel/UCq6XkhO5SZ66N04IcPbqNcw
 """
 
 from __future__ import print_function
 import random
 from insults import get_insult
 from scenarios import scenarios
+from sounds import sounds
 
 # --------------- Helpers that build all of the responses ----------------------
 def build_speechlet_response(title, output, reprompt_text, should_end_session):
     return {
-        'outputSpeech': {
-            'type': 'PlainText',
-            'text': output
+        "outputSpeech": {
+            "type": "SSML",
+            "ssml": __build_ssml_speech(output)
         },
-        'card': {
-            'type': 'Simple',
-            'title': "SessionSpeechlet - " + title,
-            'content': "SessionSpeechlet - " + output
+        "card": {
+            "type": "Simple",
+            "title": "SessionSpeechlet - " + title,
+            "content": "SessionSpeechlet - " + __remove_ssml_speech(output)
         },
-        'reprompt': {
-            'outputSpeech': {
-                'type': 'PlainText',
-                'text': reprompt_text
+        "reprompt": {
+            "outputSpeech": {
+                "type": "SSML",
+                "ssml":  __build_ssml_speech(output)
             }
         },
-        'shouldEndSession': should_end_session
+        "shouldEndSession": should_end_session
     }
 
 def build_response(session_attributes, speechlet_response):
     return {
-        'version': '1.0',
-        'sessionAttributes': session_attributes,
-        'response': speechlet_response
+        "version": "1.0",
+        "sessionAttributes": session_attributes,
+        "response": speechlet_response
     }
 
 
 # --------------- Functions that control the skill's behavior ------------------
+
+def __build_ssml_speech(text):
+    """Build the SSML to include sound effects which are captioned by <>"""
+    # replace any soundkey (eg. (door) with a random audio clip from amazon clips based on sounds dict of list of clips
+    for soundkey in sounds.keys() :
+        if soundkey in text :
+            print(soundkey)
+            print(text)
+            newString = random.choice(sounds[soundkey])
+            newString = newString + '<break time="1s"/>'
+            text = text.replace(soundkey, newString)
+            print(text)
+    
+    t = '<speak>' + text + '</speak>'
+    
+    # t = """<speak>
+    #         <audio src="soundbank://soundlibrary/scifi/amzn_sfx_scifi_door_open_01"/>
+    #         </speak>"""
+    
+    # t = """<speak>
+    #         This is Alexa's regular speech, followed by the sound effect named Bear Groan Roar (1).
+    #         <audio src="soundbank://soundlibrary/animals/amzn_sfx_bear_groan_roar_01"/>
+    #     </speak>"""
+     
+    # print(t)
+           
+    # t = """<speak>
+    #         followed by the sound effect named Bear Groan Roar (1).
+    #         <audio src="soundbank://soundlibrary/animals/amzn_sfx_bear_groan_roar_01"/>
+    #         </speak>"""
+    # t = "<speak> <audio src=\"soundbank://soundlibrary/scifi/amzn_sfx_scifi_spaceship_flyby_01\"/> You are a mixed crew of misfits on your mission to find the illusive and dastardly Aldric Von Monico to stop his evil space pirates and the rumored super weapon they are building at a secret location. As you explore keep track of your ships crew morale, and ship strength, if either goes below zero you will lose your mission. On your adventures try to find secrets of the location of Von Monico and his pirate weapon for the final showdown by gathering intel. Welcome to the adventure captain, adventure awaits you and your misfit crew. Say Yes to proceed or No to give up now.</speak>"
+
+# <break time="1s"/>
+
+# """<speak>
+#     Here's a surprise you did not expect.  
+#     <voice name="Kendra"><lang xml:lang="en-US">I want to tell you a secret.</lang></voice>
+#     <voice name="Brian"><lang xml:lang="en-GB">Your secret is safe with me!</lang></voice>	
+#     <voice name="Kendra"><lang xml:lang="en-US">I am not a real human.</lang></voice>.
+#     Can you believe it?
+# </speak>"""
+
+
+    return t
+    
+def __remove_ssml_speech(text):
+    """Remove the SSML to include sound effects which are captioned by <>"""
+    
+    # replace any soundkey (eg. <door>) with a random audio clip from amazon clips based on sounds dict of list of clips
+    for soundkey in sounds.keys() :
+        if soundkey in text :
+            text = text.replace(soundkey, '')
+
+    return text
 
 def __pass_session_attributes(session):
     """Get the current session attributes and pass them back as a dictionary for the session_attributes dictionary
