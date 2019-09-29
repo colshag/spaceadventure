@@ -10,9 +10,15 @@ scenarioNames = []
 with open('scenarios.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        if 'ID' != '':
-            for item in ['ID','SCENARIO','YES','NO','EXIT','CREW MORALE', 'SHIP STRENGTH', 'INTEL']:
+        d = {}
+        if 'ID' != '' and 'SCENARIO' != '':
+            for item in ['SCENARIO','DIALOG']:
                 d[item] = row[item]
+            for item in ['ID','YES','NO','EXIT','CREW MORALE', 'SHIP STRENGTH', 'INTEL']:
+                try:
+                    d[item] = int(row[item])
+                except:
+                    d[item] = 0
             print(d)
             scenarios.append(d)
 

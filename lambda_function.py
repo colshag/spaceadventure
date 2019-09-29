@@ -1,7 +1,5 @@
 """
-Space Adventure by NeuroJump games
-Special Thanks to Keith Galli for help understanding python Alexa coding!
-https://www.youtube.com/channel/UCq6XkhO5SZ66N04IcPbqNcw
+AWS lambda code by end of part 2 of programming alexa series
 """
 
 from __future__ import print_function
